@@ -1,0 +1,71 @@
+---
+title: "Regression Models Course Project"
+output: pdf_document
+---
+
+---
+subtitle: Brief Introduction
+---
+In this project we are going to analyse the data related to cars. mtcars is a dataset in which the data collected on a collection of cars is saved. The primary objective of this analysis is to answer following questions. 
+
+1) Is the automatic or manual gear transmission effects the Miles per Gallon(MPG) or not?
+2) Quanitfying the effect of gear shift type on MPG?
+
+---
+subtitle: Data preparation and Understanding
+---
+
+```{r,echo=FALSE}
+data(mtcars)
+dim(mtcars)
+sapply(mtcars,class)
+```
+The mtcars data set have 32 observations and 11 variables. all the variables are numeric in nature and the variles "mpg" is the target or dependent variable for our analysis. 
+---
+subtitle: Test whether there is difference in MPG by great shfit type
+---
+Since our analysis is by variables vm,am conver these two variabels as factor variables.
+```{r, echo=FALSE}
+mtcars$vs <- as.factor(mtcars$vs)
+mtcars$am <- as.factor(mtcars$am)
+```
+We mainly focus on the relationship between variables mpg (Miles/(US) gallon) and am (Transmission). Box plot shows that there's a good separation of groups based on gas mileage.
+```{r,echo=FALSE}
+boxplot(mpg ~ am, data = mtcars, xlab = "Transmission (0 = automatic, 1 = manual)")
+```
+Since there are 10 predictor variables in the data set. Some may play bigger role to determination of mpg. To identify the best variables out of these 10 predictor variales let's do an analysis of variance model as below.
+```{r,echo=FALSE}
+analysis <- aov(mpg ~ ., data = mtcars)
+summary(analysis)
+```
+The above output gives the relative imporatnce of each variables with respect to MPG and obviously, variables with p-value below 0.05 are more important. Based on this, we choose cyl, disp, wt, drat, am as predictor variables for first model.
+---
+subtitle: Fitting the leaner model
+---
+```{r,echo=FALSE}
+lm <- lm(mpg ~ cyl + disp + wt + drat + am, data = mtcars)
+summary(lm)
+```
+from the above output we can observe that the coefficient of drat has p value which shows that this variable is not siginificant in the model. let's run the model by ignoring this variable.
+```{r,echo=FALSE}
+lm <- lm(mpg ~ cyl + disp + wt + am, data = mtcars)
+summary(lm)
+```
+Now it is evident that disp is not significant in the model so remove it and re run the model with remaining variables. 
+```{r,echo=FALSE}
+lm <- lm(mpg ~ cyl + wt + am, data = mtcars)
+summary(lm)
+```
+The adjusted r-squared is 0.83 and this is our final model. Clearly, with cylinders and weight as confounding variables, the ceofficient of the am variable is small but has a large p-value. We cannot reject the hypothesis that the coefficient of am is 0.
+
+To diagnostic the model, we apply the plot() to the object returned by the lm(). There is no discernible pattern found according to upper left graph. The normal Q-Q plot (upper right) indicates the model met the normality assumption. Scale-Location graph (bottom left) shows constant variance assumption are satisfied.
+```{r,echo=FALSE}
+par(mfrow = c(2, 2))
+plot(lm)
+```
+
+
+
+By looking at the plots we can conclude that the weight and number of cylenders paly an important role in determination of MPG. 
+
+
